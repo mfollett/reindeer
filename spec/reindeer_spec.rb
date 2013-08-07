@@ -97,5 +97,14 @@ describe Reindeer do
         expect(example.new.send predicate).to be_false
       end
     end
+
+    context 'when not generating a predicate' do
+      let(:params)    { { is: :ro } }
+      let(:predicate) { :"#{attribute_name}?" }
+
+      it 'does not have a predicate' do
+        expect(example.methods).to_not include(predicate)
+      end
+    end
   end
 end
