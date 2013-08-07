@@ -28,15 +28,17 @@ module Reindeer
 
       @@attributes_to_initialize << attribute_name
 
-      if attribute_parameters[:predicate]
-        define_method("#{attribute_name}?") do
-          not send(attribute_name).nil?
-        end
-      end
+      build_predicate(attribute_name) if attribute_parameters[:predicate]
     end
   end
 
   private
+
+  def build_predicate(attribute_name)
+    define_method("#{attribute_name}?") do
+      not send(attribute_name).nil?
+    end
+  end
 
   def determine_accessor_generator(attribute_parameters)
     case is = attribute_parameters[:is]
