@@ -105,5 +105,28 @@ describe Reindeer do
         expect(example.methods).to_not include(predicate)
       end
     end
+
+    context 'when generating a clearer' do
+      let(:params)    { { is: :ro, clearer: true } }
+      let(:clearer)   { :"clear_#{attribute_name}!" }
+      let(:old_value) { 42 }
+      let(:instance)  { example.new( attribute_name => old_value ) }
+
+      it 'generates a method to clear an attribute' do
+        expect {instance.send clearer}.
+          to change { instance.instance_variable_get :"@#{attribute_name}" } .
+          from(old_value).to(nil)
+      end
+    end
+
+    context 'when not generating a clearer' do
+      let(:params)  { { is: :ro } }
+      let(:clearer) { :"clear_#{attribute_name}!" }
+      let(:instance)  { example.new }
+
+      it 'does not have a predicate' do
+        expect(instance.methods).to_not include(clearer)
+      end
+    end
   end
 end

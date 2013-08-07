@@ -29,6 +29,7 @@ module Reindeer
       @@attributes_to_initialize << attribute_name
 
       build_predicate(attribute_name) if attribute_parameters[:predicate]
+      build_clearer(  attribute_name) if attribute_parameters[:clearer]
     end
   end
 
@@ -37,6 +38,13 @@ module Reindeer
   def build_predicate(attribute_name)
     define_method("#{attribute_name}?") do
       not send(attribute_name).nil?
+    end
+  end
+
+  def build_clearer(attribute_name)
+    puts "clear_#{attribute_name}!"
+    define_method("clear_#{attribute_name}!") do
+      instance_variable_set "@#{attribute_name}", nil
     end
   end
 
