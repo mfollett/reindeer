@@ -24,11 +24,15 @@ module Reindeer
 
     accessor_generator = determine_accessor_generator attribute_parameters
     class_exec do
-      send accessor_generator, attribute_name
-    end if accessor_generator
+      send(accessor_generator, attribute_name) if accessor_generator
 
-    class_exec do
       @@attributes_to_initialize << attribute_name
+
+      if attribute_parameters[:predicate]
+        define_method("#{attribute_name}?") do
+          not send(attribute_name).nil?
+        end
+      end
     end
   end
 

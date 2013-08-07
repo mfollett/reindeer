@@ -83,5 +83,19 @@ describe Reindeer do
         expect(instance.instance_variable_get :"@#{getter}").to eq expected_value
       end
     end
+
+    context 'when generating a predicate' do
+
+      let(:params)    { { is: :ro, predicate: true } }
+      let(:predicate) { :"#{attribute_name}?" }
+
+      it 'evaluates true when the value is set' do
+        expect(example.new( attribute_name => 42 ).send predicate).to be_true
+      end
+
+      it 'evaluates true when the value is set' do
+        expect(example.new.send predicate).to be_false
+      end
+    end
   end
 end
