@@ -6,20 +6,44 @@ module Reindeer
   # XXX Note sure if this is a good name.
   class BadIs < ArgumentError; end
 
+  def self.extended(host_class)
+    host_class.class_exec do
+      @@attributes_to_initialize = []
+      def initialize(initial_values = {})
+        initial_values ||= {}
+        @@attributes_to_initialize.each do |attr|
+          instance_variable_set :"@#{attr}", initial_values[attr]
+        end if initial_values.count > 0
+
+        super()
+      end
+    end
+  end
+
   def has(attribute_name, attribute_parameters)
 
-    accessor_generator = case is = attribute_parameters[:is]
-                         when :ro
-                           :attr_reader
-                         when :rw
-                           :attr_accessor
-                         when nil
-                           nil
-                         else
-                           raise BadIs.new("#{is} invalid")
-                         end
-    class_eval do
+    accessor_generator = determine_accessor_generator attribute_parameters
+    class_exec do
       send accessor_generator, attribute_name
-    end if is
+    end if accessor_generator
+
+    class_exec do
+      @@attributes_to_initialize << attribute_name
+    end
+  end
+
+  private
+
+  def determine_accessor_generator(attribute_parameters)
+    case is = attribute_parameters[:is]
+    when :ro
+      :attr_reader
+    when :rw
+      :attr_accessor
+    when nil
+      nil
+    else
+      raise BadIs.new("#{is} invalid")
+    end
   end
 end

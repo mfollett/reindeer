@@ -72,5 +72,16 @@ describe Reindeer do
         expect(example.new.methods).to_not include(setter)
       end
     end
+
+    context 'when constructing an object' do
+
+      let(:params)          { { is: :rw } }
+      let(:expected_value)  { 42 }
+
+      it 'accepts & records parameters to new' do
+        instance = example.new( attribute_name => expected_value )
+        expect(instance.instance_variable_get :"@#{getter}").to eq expected_value
+      end
+    end
   end
 end
