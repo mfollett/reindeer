@@ -1,20 +1,19 @@
 require 'reindeer'
 
 describe Reindeer do
+
+  let(:example) { Class.new { extend Reindeer } }
   it 'can be extended' do
-    expect { Class.new { extend Reindeer } }.to_not raise_error
+    expect { example }.to_not raise_error
   end
 
   context 'when extended' do
-
-    let(:example) { Class.new { extend Reindeer } }
-
     it 'provides a has class method' do
       expect(example.methods).to include(:has)
     end
   end
 
-  describe :has do
+  describe ':has' do
 
     let(:attribute_name) { :attribute_name }
 
