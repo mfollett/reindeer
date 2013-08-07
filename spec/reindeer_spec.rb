@@ -5,7 +5,7 @@ describe Reindeer do
     expect { Class.new { extend Reindeer } }.to_not raise_error
   end
 
-  context 'when included' do
+  context 'when extended' do
 
     let(:example) { Class.new { extend Reindeer } }
 
@@ -49,6 +49,27 @@ describe Reindeer do
 
       it 'creates a writer' do
         expect(example.new.methods).to include(setter)
+      end
+    end
+
+    context 'with bad is' do
+      let(:is)     { :jabbajabba }
+      let(:params) { { is: is } }
+
+      it 'throws an exception' do
+        expect { example }.to raise_error(Reindeer::BadIs, "#{is} invalid")
+      end
+    end
+
+    context 'with no is' do
+      let(:params) { {} }
+
+      it 'does not create a reader' do
+        expect(example.new.methods).to_not include(getter)
+      end
+
+      it 'does not create a writer' do
+        expect(example.new.methods).to_not include(setter)
       end
     end
   end
