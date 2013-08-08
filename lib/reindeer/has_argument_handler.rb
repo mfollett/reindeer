@@ -15,4 +15,17 @@ class Reindeer::HasArgumentHandler
       @parameters[attribute] || @parameters[:attribute_name]
     end
   end
+
+  def accessor_type
+    case is = @parameters[:is]
+    when :ro
+      :attr_reader
+    when :rw
+      :attr_accessor
+    when nil
+      nil
+    else
+      raise Reindeer::BadIs.new("#{is} invalid")
+    end
+  end
 end
