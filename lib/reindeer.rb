@@ -2,12 +2,11 @@ require "reindeer/version"
 require 'reindeer/has_argument_handler'
 
 # TODO:
-# * writer
-# * reader
 # * default
 # * builder
 # * lazy
 # * init_arg
+# * improve logic for ro/rw
 #
 # Maybe TODO:
 # * trigger
