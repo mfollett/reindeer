@@ -26,10 +26,12 @@ describe Reindeer::HasArgumentHandler do
       subject_class.new attribute_name: attribute_name
     end
 
-    its(:attribute_name)   { should eq attribute_name }
-    its(:initializer_name) { should eq attribute_name }
-    its(:getter_name)      { should eq attribute_name }
-    its(:setter_name)      { should eq attribute_name }
+    its(:attribute_name)   { should eq attribute_name            }
+    its(:initializer_name) { should eq attribute_name            }
+    its(:getter_name)      { should eq attribute_name            }
+    its(:setter_name)      { should eq attribute_name.to_s + '=' }
+    its(:clearer_name)     { should eq 'clear_' + attribute_name.to_s + '!' }
+    its(:predicate_name)   { should eq attribute_name.to_s + '?' }
   end
 
   context 'when provided all possible names' do
@@ -46,10 +48,12 @@ describe Reindeer::HasArgumentHandler do
                         setter_name:      setter_name
     end
 
-    its(:attribute_name)   { should eq attribute_name   }
-    its(:initializer_name) { should eq initializer_name }
-    its(:getter_name)      { should eq getter_name      }
-    its(:setter_name)      { should eq setter_name      }
+    its(:attribute_name)   { should eq attribute_name         }
+    its(:initializer_name) { should eq initializer_name       }
+    its(:getter_name)      { should eq getter_name            }
+    its(:setter_name)      { should eq setter_name.to_s + '=' }
+    its(:clearer_name)     { should eq 'clear_' + setter_name.to_s + '!' }
+    its(:predicate_name)   { should eq getter_name.to_s + '?' }
   end
 
   describe :accessor_type do

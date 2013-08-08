@@ -10,10 +10,22 @@ class Reindeer::HasArgumentHandler
     @parameters[:attribute_name]
   end
 
-  [:initializer_name, :getter_name, :setter_name].each do |attribute|
+  [:initializer_name, :getter_name].each do |attribute|
     define_method attribute do
       @parameters[attribute] || @parameters[:attribute_name]
     end
+  end
+
+  def setter_name
+    setter_base_name.to_s + '='
+  end
+
+  def clearer_name
+    @parameters[:clearer_name] || 'clear_' + setter_base_name.to_s + '!'
+  end
+
+  def predicate_name
+    @parameters[:predicate_name] || getter_name.to_s + "?"
   end
 
   def accessor_type
@@ -27,5 +39,11 @@ class Reindeer::HasArgumentHandler
     else
       raise Reindeer::BadIs.new("#{is} invalid")
     end
+  end
+
+  private
+
+  def setter_base_name
+    (@parameters[:setter_name] || @parameters[:attribute_name])
   end
 end

@@ -1,4 +1,5 @@
 require "reindeer/version"
+require 'reindeer/has_argument_handler'
 
 # TODO:
 # * writer
@@ -51,46 +52,49 @@ module Reindeer
 
   def has(attribute_name, attribute_parameters)
 
-    accessor_generator = determine_accessor_generator attribute_parameters
-    class_exec do
-      send(accessor_generator, attribute_name) if accessor_generator
+    arguments = HasArgumentHandler.new(
+      attribute_parameters.merge({ attribute_name: attribute_name })
+    )
 
-      if attribute_parameters[:required]
-        @@attributes_required_to_initialize << attribute_name
-      else
-        @@attributes_to_initialize << attribute_name
+    accessor_generator = arguments.accessor_type
+    class_exec do
+
+      if accessor_generator == :attr_reader
+        define_method(arguments.getter_name) do
+          instance_variable_get "@#{arguments.attribute_name}"
+        end
+      elsif accessor_generator == :attr_accessor
+        define_method(arguments.getter_name) do
+          instance_variable_get "@#{arguments.attribute_name}"
+        end
+        define_method(arguments.setter_name) do |val|
+          instance_variable_set "@#{arguments.attribute_name}", val
+        end
       end
 
-      build_predicate(attribute_name) if attribute_parameters[:predicate]
-      build_clearer(  attribute_name) if attribute_parameters[:clearer]
+      if attribute_parameters[:required]
+        @@attributes_required_to_initialize << arguments.initializer_name
+      else
+        @@attributes_to_initialize << arguments.initializer_name
+      end
+
+      build_predicate(arguments.predicate_name, arguments.getter_name)  if attribute_parameters[:predicate]
+      build_clearer(  arguments.clearer_name, arguments.attribute_name) if attribute_parameters[:clearer]
     end
   end
 
   private
 
-  def build_predicate(attribute_name)
-    define_method("#{attribute_name}?") do
-      not send(attribute_name).nil?
+  def build_predicate(predicate_name, getter_name)
+    puts predicate_name
+    define_method(predicate_name) do
+      not send(getter_name).nil?
     end
   end
 
-  def build_clearer(attribute_name)
-    puts "clear_#{attribute_name}!"
-    define_method("clear_#{attribute_name}!") do
+  def build_clearer(clearer_name, attribute_name)
+    define_method(clearer_name) do
       instance_variable_set "@#{attribute_name}", nil
-    end
-  end
-
-  def determine_accessor_generator(attribute_parameters)
-    case is = attribute_parameters[:is]
-    when :ro
-      :attr_reader
-    when :rw
-      :attr_accessor
-    when nil
-      nil
-    else
-      raise BadIs.new("#{is} invalid")
     end
   end
 end
