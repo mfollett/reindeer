@@ -3,7 +3,6 @@ require "reindeer/version"
 # TODO:
 # * writer
 # * reader
-# * required
 # * default
 # * builder
 # * lazy
@@ -21,14 +20,29 @@ module Reindeer
   # XXX Note sure if this is a good name.
   class BadIs < ArgumentError; end
 
+  # Exception thrown when a required parameter isn't provided for
+  # initialization.
+  class MissingParameter < ArgumentError; end
+
   def self.extended(host_class)
     host_class.class_exec do
-      @@attributes_to_initialize = []
+
+      @@attributes_required_to_initialize = []
+      @@attributes_to_initialize          = []
+
       def initialize(initial_values = {})
         initial_values ||= {}
         @@attributes_to_initialize.each do |attr|
           instance_variable_set :"@#{attr}", initial_values[attr]
-        end if initial_values.count > 0
+        end
+
+        @@attributes_required_to_initialize.each do |attr|
+          if initial_values[attr].nil?
+            raise MissingParameter
+          else
+            instance_variable_set :"@#{attr}", initial_values[attr]
+          end
+        end
 
         super()
       end
@@ -41,7 +55,11 @@ module Reindeer
     class_exec do
       send(accessor_generator, attribute_name) if accessor_generator
 
-      @@attributes_to_initialize << attribute_name
+      if attribute_parameters[:required]
+        @@attributes_required_to_initialize << attribute_name
+      else
+        @@attributes_to_initialize << attribute_name
+      end
 
       build_predicate(attribute_name) if attribute_parameters[:predicate]
       build_clearer(  attribute_name) if attribute_parameters[:clearer]

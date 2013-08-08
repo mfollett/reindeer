@@ -128,5 +128,19 @@ describe Reindeer do
         expect(instance.methods).to_not include(clearer)
       end
     end
+
+    context 'when an attribute is required for initialization' do
+      let(:params) { { is: :ro, required: true } }
+      let(:value)  { 99 }
+
+      it 'raises an exception when it is missing' do
+        expect { example.new }.to raise_error Reindeer::MissingParameter
+      end
+
+      it 'assigns the required value' do
+        instance = example.new attribute_name => value
+        expect(instance.send getter).to eq value
+      end
+    end
   end
 end
