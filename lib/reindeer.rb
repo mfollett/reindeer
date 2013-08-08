@@ -1,5 +1,20 @@
 require "reindeer/version"
 
+# TODO:
+# * writer
+# * reader
+# * required
+# * default
+# * builder
+# * lazy
+# * init_arg
+#
+# Maybe TODO:
+# * trigger
+# * does
+# * handles
+# * multiple attributes
+
 module Reindeer
 
   # Exception thrown when the :is argument is invalid.
