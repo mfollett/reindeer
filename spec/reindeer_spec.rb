@@ -130,5 +130,56 @@ describe Reindeer do
         expect(instance.send getter).to eq value
       end
     end
+
+    context 'when handling defaults' do
+
+      context 'if no default is provided' do
+        let(:params) { { is: :rw } }
+
+        it 'does not have a default' do
+          instance = example.new
+          expect(instance.send attribute_name).to be_nil
+        end
+
+        it 'does not change the actual value' do
+          instance = example.new attribute_name: 11
+          expect(instance.send attribute_name).to eq 11
+        end
+      end
+
+      context 'if a default is provided' do
+        let(:default) { 99 }
+        let(:params)  { { is: :rw, default: default } }
+
+        it 'does uses the default when there is no value' do
+          instance = example.new
+          expect(instance.send attribute_name).to eq default
+        end
+
+        it 'does not change the actual value' do
+          instance = example.new attribute_name: 62
+          expect(instance.send attribute_name).to eq 62
+        end
+      end
+
+      describe :builder do
+
+        let(:example_class) do
+          Class.new do
+            extend Reindeer
+            has :foo, builder: :build_foo
+            def build_foo; 42 end
+          end
+        end
+
+        it 'uses the provided builder to build an attribute' do
+          expect(example_class.new.foo).to eq 42
+        end
+
+        it 'does not override an initialization value' do
+          expect(example_class.new(foo: 99).foo).to eq 99
+        end
+      end
+    end
   end
 end

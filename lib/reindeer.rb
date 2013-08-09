@@ -2,7 +2,6 @@ require "reindeer/version"
 require 'reindeer/has_argument_handler'
 
 # TODO:
-# * default
 # * builder
 # * lazy
 # * init_arg
@@ -29,6 +28,7 @@ module Reindeer
 
       @@attributes_required_to_initialize = []
       @@attributes_to_initialize          = []
+      @@eager_attribute_builders          = {}
 
       def initialize(initial_values = {})
         initial_values ||= {}
@@ -44,6 +44,10 @@ module Reindeer
           end
         end
 
+        @@eager_attribute_builders.
+          select { |attr|    instance_variable_get("@#{attr}").nil?}.
+          each   { |attr, b| instance_variable_set("@#{attr}", send(b)) }
+
         super()
       end
     end
@@ -55,10 +59,12 @@ module Reindeer
       attribute_parameters.merge({ attribute_name: attribute_name })
     )
 
+    default = attribute_parameters[:default]
+
     class_exec do
 
       define_method(arguments.getter_name) do
-        instance_variable_get "@#{arguments.attribute_name}"
+        instance_variable_get("@#{arguments.attribute_name}") || default
       end
       define_method(arguments.setter_name) do |val|
         instance_variable_set "@#{arguments.attribute_name}", val
@@ -68,6 +74,11 @@ module Reindeer
         @@attributes_required_to_initialize << arguments.initializer_name
       else
         @@attributes_to_initialize << arguments.initializer_name
+      end
+
+      if attribute_parameters[:builder]
+        @@eager_attribute_builders[arguments.attribute_name] =
+          attribute_parameters[:builder]
       end
 
       build_predicate(arguments.predicate_name, arguments.getter_name)  if attribute_parameters[:predicate]
