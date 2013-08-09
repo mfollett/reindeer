@@ -56,6 +56,17 @@ describe Reindeer::HasArgumentHandler do
     its(:predicate_name)   { should eq getter_name.to_s + '?' }
   end
 
+  describe :setter? do
+    it 'is true when :rw is set' do
+      expect(subject_class.new(attribute_name: :a, is: :rw).setter?).to be_true
+    end
+
+    it 'is true when :setter_name is set' do
+      result = subject_class.new(attribute_name: :a, setter_name: :foo).setter?
+      expect(result).to be_true
+    end
+  end
+
   describe :accessor_type do
 
     subject do

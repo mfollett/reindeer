@@ -20,6 +20,10 @@ class Reindeer::HasArgumentHandler
     setter_base_name.to_s + '='
   end
 
+  def setter?
+     :rw == @parameters[:is] || @parameters.has_key?(:setter_name)
+  end
+
   def clearer_name
     @parameters[:clearer_name] || 'clear_' + setter_base_name.to_s + '!'
   end
