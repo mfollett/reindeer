@@ -160,6 +160,11 @@ describe Reindeer do
           instance = example.new attribute_name: 62
           expect(instance.send attribute_name).to eq 62
         end
+
+        it 'does not override false' do
+          instance = example.new attribute_name: false
+          expect(instance.send attribute_name).to eq false
+        end
       end
 
       describe :builder do

@@ -2,10 +2,7 @@ require "reindeer/version"
 require 'reindeer/has_argument_handler'
 
 # TODO:
-# * builder
 # * lazy
-# * init_arg
-# * improve logic for ro/rw
 #
 # Maybe TODO:
 # * trigger
@@ -46,7 +43,7 @@ module Reindeer
 
         @@eager_attribute_builders.
           select { |attr|    instance_variable_get("@#{attr}").nil?}.
-          each   { |attr, b| instance_variable_set("@#{attr}", send(b)) }
+            each { |attr, b| instance_variable_set("@#{attr}", send(b)) }
 
         super()
       end
@@ -59,12 +56,11 @@ module Reindeer
       attribute_parameters.merge({ attribute_name: attribute_name })
     )
 
-    default = attribute_parameters[:default]
-
     class_exec do
 
       define_method(arguments.getter_name) do
-        instance_variable_get("@#{arguments.attribute_name}") || default
+        val = instance_variable_get("@#{arguments.attribute_name}")
+        val.nil? ? attribute_parameters[:default] : val
       end
       define_method(arguments.setter_name) do |val|
         instance_variable_set "@#{arguments.attribute_name}", val
