@@ -60,18 +60,6 @@ describe Reindeer do
       end
     end
 
-    context 'with no is' do
-      let(:params) { {} }
-
-      it 'does not create a reader' do
-        expect(example.new.methods).to_not include(getter)
-      end
-
-      it 'does not create a writer' do
-        expect(example.new.methods).to_not include(setter)
-      end
-    end
-
     context 'when constructing an object' do
 
       let(:params)          { { is: :rw } }

@@ -1,9 +1,16 @@
 class Reindeer::MissingAttributeName < ArgumentError; end
 
 class Reindeer::HasArgumentHandler
-  def initialize(parameters)
-    raise Reindeer::MissingAttributeName if parameters[:attribute_name].nil?
-    @parameters = parameters
+
+  VALID_IS = [:ro, :rw]
+  def initialize(params)
+    raise Reindeer::MissingAttributeName if params[:attribute_name].nil?
+
+    params[:is] ||= :rw
+    is = params[:is]
+    raise Reindeer::BadIs.new("#{is} invalid") if not VALID_IS.include?(is)
+
+    @parameters = params
   end
 
   def attribute_name
@@ -30,19 +37,6 @@ class Reindeer::HasArgumentHandler
 
   def predicate_name
     @parameters[:predicate_name] || getter_name.to_s + "?"
-  end
-
-  def accessor_type
-    case is = @parameters[:is]
-    when :ro
-      :attr_reader
-    when :rw
-      :attr_accessor
-    when nil
-      nil
-    else
-      raise Reindeer::BadIs.new("#{is} invalid")
-    end
   end
 
   private

@@ -66,31 +66,4 @@ describe Reindeer::HasArgumentHandler do
       expect(result).to be_true
     end
   end
-
-  describe :accessor_type do
-
-    subject do
-      subject_class.new(attribute_name: 'a', is: access_control).accessor_type
-    end
-
-    context 'when passed :ro' do
-      let(:access_control) { :ro }
-
-      it { should eq :attr_reader }
-    end
-
-    context 'when passed :rw' do
-      let(:access_control) { :rw }
-
-      it { should eq :attr_accessor }
-    end
-
-    context 'when passed invalid data' do
-      let(:access_control) { :not_a_valid_value }
-
-      it 'raises BadIs' do
-        expect {subject} .to raise_error Reindeer::BadIs
-      end
-    end
-  end
 end

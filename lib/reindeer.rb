@@ -55,21 +55,14 @@ module Reindeer
       attribute_parameters.merge({ attribute_name: attribute_name })
     )
 
-    accessor_generator = arguments.accessor_type
     class_exec do
 
-      if accessor_generator == :attr_reader
-        define_method(arguments.getter_name) do
-          instance_variable_get "@#{arguments.attribute_name}"
-        end
-      elsif accessor_generator == :attr_accessor
-        define_method(arguments.getter_name) do
-          instance_variable_get "@#{arguments.attribute_name}"
-        end
-        define_method(arguments.setter_name) do |val|
-          instance_variable_set "@#{arguments.attribute_name}", val
-        end
+      define_method(arguments.getter_name) do
+        instance_variable_get "@#{arguments.attribute_name}"
       end
+      define_method(arguments.setter_name) do |val|
+        instance_variable_set "@#{arguments.attribute_name}", val
+      end if arguments.setter?
 
       if attribute_parameters[:required]
         @@attributes_required_to_initialize << arguments.initializer_name
