@@ -3,6 +3,7 @@ require 'reindeer'
 describe Reindeer do
 
   let(:example) { Class.new { extend Reindeer } }
+
   it 'can be extended' do
     expect { example }.to_not raise_error
   end
@@ -37,8 +38,13 @@ describe Reindeer do
       it 'does not create a writer' do
         expect(example.new.methods).to_not include(setter)
       end
-    end
 
+      it 'does not define the ivar on creation' do
+        expect(
+          example.new.instance_variable_defined? "@#{attribute_name}"
+        ).to be_false
+      end
+    end
     context 'with read/write accessors' do
       let(:params) { { is: :rw } }
 
@@ -48,6 +54,12 @@ describe Reindeer do
 
       it 'creates a writer' do
         expect(example.new.methods).to include(setter)
+      end
+
+      it 'does not define the ivar on creation' do
+        expect(
+          example.new.instance_variable_defined? "@#{attribute_name}"
+        ).to be_false
       end
     end
 
@@ -64,10 +76,18 @@ describe Reindeer do
 
       let(:params)          { { is: :rw } }
       let(:expected_value)  { 42 }
+      let(:instance)        { example.new( attribute_name => expected_value ) }
+
+      it 'defines the ivar' do
+        expect(
+          instance.instance_variable_defined? :"@#{attribute_name}"
+        ).to eq true
+      end
 
       it 'accepts & records parameters to new' do
-        instance = example.new( attribute_name => expected_value )
-        expect(instance.instance_variable_get :"@#{getter}").to eq expected_value
+        expect(
+          instance.instance_variable_get :"@#{attribute_name}"
+        ).to eq expected_value
       end
     end
 
@@ -83,6 +103,12 @@ describe Reindeer do
       it 'evaluates true when the value is set' do
         expect(example.new.send predicate).to be_false
       end
+
+      it 'does not define the ivar' do
+        expect(
+          example.new.instance_variable_defined? :"@#{attribute_name}"
+        ).to eq false
+      end
     end
 
     context 'when not generating a predicate' do
@@ -91,6 +117,12 @@ describe Reindeer do
 
       it 'does not have a predicate' do
         expect(example.methods).to_not include(predicate)
+      end
+
+      it 'does not define the ivar' do
+        expect(
+          example.new.instance_variable_defined? :"@#{attribute_name}"
+        ).to eq false
       end
     end
 
@@ -114,6 +146,12 @@ describe Reindeer do
 
       it 'does not have a predicate' do
         expect(instance.methods).to_not include(clearer)
+      end
+
+      it 'does not define the ivar' do
+        expect(
+          instance.instance_variable_defined? :"@#{attribute_name}"
+        ).to eq false
       end
     end
 
@@ -145,13 +183,19 @@ describe Reindeer do
           instance = example.new attribute_name: 11
           expect(instance.send attribute_name).to eq 11
         end
+
+        it 'does not define the ivar' do
+          expect(
+            example.new.instance_variable_defined? :"@#{attribute_name}"
+          ).to eq false
+        end
       end
 
       context 'if a default is provided' do
         let(:default) { 99 }
         let(:params)  { { is: :rw, default: default } }
 
-        it 'does uses the default when there is no value' do
+        it 'uses the default when there is no value' do
           instance = example.new
           expect(instance.send attribute_name).to eq default
         end
@@ -164,6 +208,12 @@ describe Reindeer do
         it 'does not override false' do
           instance = example.new attribute_name: false
           expect(instance.send attribute_name).to eq false
+        end
+
+        it 'does not define the ivar' do
+          expect(
+            example.new.instance_variable_defined? :"@#{attribute_name}"
+          ).to eq false
         end
       end
 
@@ -183,6 +233,34 @@ describe Reindeer do
 
         it 'does not override an initialization value' do
           expect(example_class.new(foo: 99).foo).to eq 99
+        end
+
+        context 'when lazy' do
+
+          let(:example_class) do
+            Class.new do
+              extend Reindeer
+              has :foo, builder: :build_foo, lazy: true
+              def build_foo; 42 end
+            end
+          end
+
+          let(:instance) { example_class.new }
+
+          it 'does not define the ivar' do
+            expect(
+              instance.instance_variable_defined? :"@#{attribute_name}"
+            ).to eq false
+          end
+
+          it 'calls the builder when an accessor is called' do
+            instance.should_receive(:build_foo)
+            instance.foo
+          end
+
+          it 'sets the attribute value to the built value' do
+            expect(instance.foo).to eq instance.build_foo
+          end
         end
       end
     end
