@@ -2,13 +2,15 @@ require "reindeer/version"
 require 'reindeer/has_argument_handler'
 
 # TODO:
-# * lazy
+# * refactor class generation
+# * refactor tests to remove duplication, expand combination coverage
 #
 # Maybe TODO:
 # * trigger
 # * does
 # * handles
 # * multiple attributes
+# * isa
 
 module Reindeer
 
@@ -30,14 +32,16 @@ module Reindeer
       def initialize(initial_values = {})
         initial_values ||= {}
         @@attributes_to_initialize.each do |attr|
-          instance_variable_set :"@#{attr}", initial_values[attr]
+          if initial_values.has_key? attr
+            instance_variable_set :"@#{attr}", initial_values[attr]
+          end
         end
 
         @@attributes_required_to_initialize.each do |attr|
-          if initial_values[attr].nil?
-            raise MissingParameter
-          else
+          if initial_values.has_key? attr
             instance_variable_set :"@#{attr}", initial_values[attr]
+          else
+            raise MissingParameter
           end
         end
 
@@ -59,9 +63,24 @@ module Reindeer
     class_exec do
 
       define_method(arguments.getter_name) do
-        val = instance_variable_get("@#{arguments.attribute_name}")
-        val.nil? ? attribute_parameters[:default] : val
+        if instance_variable_defined? "@#{arguments.attribute_name}"
+          return instance_variable_get "@#{arguments.attribute_name}"
+        end
+
+        if attribute_parameters.has_key? :default
+          default = attribute_parameters[:default]
+          instance_variable_set "@#{arguments.attribute_name}", default
+          return default
+        end
+
+        if attribute_parameters.has_key? :builder
+          builder = attribute_parameters[:builder]
+          built   = send builder
+          instance_variable_set "@#{arguments.attribute_name}", built
+          return built
+        end
       end
+
       define_method(arguments.setter_name) do |val|
         instance_variable_set "@#{arguments.attribute_name}", val
       end if arguments.setter?
@@ -72,7 +91,7 @@ module Reindeer
         @@attributes_to_initialize << arguments.initializer_name
       end
 
-      if attribute_parameters[:builder]
+      if attribute_parameters[:builder] and not attribute_parameters[:lazy]
         @@eager_attribute_builders[arguments.attribute_name] =
           attribute_parameters[:builder]
       end
@@ -85,7 +104,6 @@ module Reindeer
   private
 
   def build_predicate(predicate_name, getter_name)
-    puts predicate_name
     define_method(predicate_name) do
       not send(getter_name).nil?
     end
