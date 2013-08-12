@@ -98,22 +98,22 @@ module Reindeer
           attribute_parameters[:builder]
       end
 
-      build_predicate(arguments.predicate_name, arguments.getter_name)  if attribute_parameters[:predicate]
-      build_clearer(  arguments.clearer_name, arguments.attribute_name) if attribute_parameters[:clearer]
+      build_predicate(arguments.predicate_name, arguments.attribute_name)  if attribute_parameters[:predicate]
+      build_clearer(  arguments.clearer_name, arguments.attribute_name)    if attribute_parameters[:clearer]
     end
   end
 
   private
 
-  def build_predicate(predicate_name, getter_name)
+  def build_predicate(predicate_name, attribute_name)
     define_method(predicate_name) do
-      not send(getter_name).nil?
+      instance_variable_defined? "@#{attribute_name}"
     end
   end
 
   def build_clearer(clearer_name, attribute_name)
     define_method(clearer_name) do
-      instance_variable_set "@#{attribute_name}", nil
+      remove_instance_variable "@#{attribute_name}"
     end
   end
 end
