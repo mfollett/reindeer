@@ -2,8 +2,8 @@ require "reindeer/version"
 require 'reindeer/has_argument_handler'
 
 # TODO:
+# * implement before, after, & around
 # * refactor class generation
-# * refactor tests to remove duplication, expand combination coverage
 #
 # Maybe TODO:
 # * trigger
