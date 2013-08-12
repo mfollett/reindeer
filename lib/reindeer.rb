@@ -103,6 +103,27 @@ module Reindeer
     end
   end
 
+  def before(method_name)
+     instance_exec { puts method :frobinicate }
+     class_exec { puts method :frobinicate }
+     puts "foo"
+#    instance_exec do
+#      puts methods.sort
+#      unmodified_method = method method_name
+#
+#      define_method(method_name) do
+#        yield
+#        unmodified_method.call
+#      end
+#    end
+  end
+
+  def after(modified_method)
+  end
+
+  def around(modified_method)
+  end
+
   private
 
   def build_predicate(predicate_name, attribute_name)

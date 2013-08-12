@@ -38,6 +38,10 @@ shared_context 'an attribute with a predicate and access' do |access|
 end
 
 module ReindeerHelpers
+  def class_has_a(method)
+    expect(example_class.methods).to include(method)
+  end
+
   def has_a(method)
     expect(instance.methods).to include(method)
   end
